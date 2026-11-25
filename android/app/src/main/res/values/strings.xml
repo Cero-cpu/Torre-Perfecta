@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Torre Perfecta</string>
+    <string name="title_activity_main">Torre Perfecta</string>
+    <string name="package_name">com.alqenix.torreperfecta</string>
+    <string name="custom_url_scheme">com.alqenix.torreperfecta</string>
+    <string name="admob_app_id">ca-app-pub-7768094116195335~6116557955</string>
+</resources>

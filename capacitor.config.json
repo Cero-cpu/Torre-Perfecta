@@ -1,0 +1,13 @@
+{
+  "appId": "com.alqenix.torreperfecta",
+  "appName": "Torre Perfecta",
+  "webDir": "www",
+  "backgroundColor": "#12142b",
+  "plugins": {
+    "SystemBars": {
+      "insetsHandling": "css",
+      "style": "DARK",
+      "hidden": false
+    }
+  }
+}

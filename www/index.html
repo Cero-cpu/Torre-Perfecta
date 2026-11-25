@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#12142b">
+<title>Torre Perfecta</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;-webkit-touch-callout:none;-webkit-text-size-adjust:100%;background:#12142b;color:#fff;touch-action:manipulation;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;
+  font-family:"Avenir Next","Nunito","Trebuchet MS",system-ui,sans-serif;font-weight:700}
+canvas{position:fixed;inset:0;width:100%;height:100%}
+button{font:inherit;color:inherit;cursor:pointer}
+svg{width:24px;height:24px;fill:currentColor}
+:root{--top:calc(var(--safe-area-inset-top,env(safe-area-inset-top,0px)) + 3vh);--gold:#ffd93d}
+
+/* HUD */
+#hud{position:fixed;inset:0;pointer-events:none;display:none}
+body.play #hud{display:block}
+#score{position:absolute;left:0;right:0;top:var(--top);text-align:center;font-size:clamp(52px,12vmin,88px);
+  font-weight:900;line-height:1;text-shadow:0 4px 0 rgba(0,0,0,.3),0 0 24px rgba(0,0,0,.25)}
+#score.pop{animation:pop .2s}
+#pips{position:absolute;left:0;right:0;top:calc(var(--top) + clamp(58px,13vmin,98px));display:flex;gap:6px;justify-content:center}
+#pips span{width:24px;height:6px;border-radius:3px;background:rgba(255,255,255,.22);transition:.15s}
+#pips span.on{background:var(--gold)}
+#pips.full span{box-shadow:0 0 10px var(--gold)}
+#toast{position:absolute;left:0;right:0;top:30%;text-align:center;font-size:clamp(20px,3.4vh,28px);font-weight:900;
+  color:var(--gold);opacity:0;text-shadow:0 3px 0 rgba(0,0,0,.35)}
+#toast.go{animation:up .9s ease-out}
+#hint{position:absolute;left:50%;width:max-content;max-width:90vw;text-align:center;transform:translateX(-50%);bottom:calc(var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px)) + 6%);
+  padding:10px 20px;border-radius:999px;background:rgba(0,0,0,.35);font-size:clamp(15px,2.3vh,18px);animation:breathe 1.6s infinite}
+#hud .chip{position:absolute;top:calc(var(--safe-area-inset-top,env(safe-area-inset-top,0px)) + 18px);left:calc(var(--safe-area-inset-left,env(safe-area-inset-left,0px)) + 14px)}
+#pauseBtn{pointer-events:auto;position:absolute;top:calc(var(--safe-area-inset-top,env(safe-area-inset-top,0px)) + 12px);right:calc(var(--safe-area-inset-right,env(safe-area-inset-right,0px)) + 12px)}
+.chip{display:inline-flex;align-items:center;gap:7px;padding:7px 14px 7px 11px;border-radius:999px;background:rgba(255,255,255,.12);
+  border:1.5px solid rgba(255,255,255,.2);font-size:15px;font-weight:800}
+.chip svg{width:18px;height:18px;color:var(--gold)}
+
+/* Pantallas */
+.screen{position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+  padding:max(var(--safe-area-inset-top,env(safe-area-inset-top,0px)),16px) max(var(--safe-area-inset-right,env(safe-area-inset-right,0px)),16px) max(var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px)),16px) max(var(--safe-area-inset-left,env(safe-area-inset-left,0px)),16px);
+  background:rgba(8,10,28,.55)}
+.screen.on{display:flex;animation:fade .25s}
+#over{background:rgba(8,10,28,.4)}
+#menu{background:linear-gradient(rgba(8,10,28,.4),rgba(8,10,28,0) 40%,rgba(8,10,28,.4))}
+.card{width:min(100%,340px);max-height:100%;overflow:auto;display:flex;flex-direction:column;gap:clamp(8px,1.8vh,14px);align-items:stretch;text-align:center}
+.screen.on .panel{animation:pin .35s cubic-bezier(.2,1.4,.4,1)}
+.panel{background:linear-gradient(160deg,rgba(44,48,102,.96),rgba(22,25,60,.96));border:1.5px solid rgba(255,255,255,.14);
+  border-radius:28px;padding:clamp(16px,3vh,26px);box-shadow:0 16px 48px rgba(0,0,0,.45)}
+#menu .card{height:100%;max-height:none;justify-content:space-between;padding:clamp(8px,6vh,48px) 0 clamp(4px,3vh,24px);overflow:visible}
+.logo{display:flex;flex-direction:column;align-items:center;gap:clamp(12px,2.5vh,22px)}
+h1{margin:0;font-size:clamp(48px,10.5vmin,76px);line-height:.95;font-weight:900;letter-spacing:-.01em;transform:rotate(-3deg)}
+h1 b,h1 i{display:block;font-style:normal}
+h1 b{color:#fff;text-shadow:0 2px 0 #c9cde8,0 4px 0 #8f95c4,0 6px 0 #5a6096,0 8px 0 #3b4078,0 16px 20px rgba(0,0,0,.45)}
+h1 i{color:var(--gold);text-shadow:0 2px 0 #f0b400,0 4px 0 #d98f00,0 6px 0 #b86f00,0 8px 0 #8f4f00,0 16px 20px rgba(0,0,0,.45)}
+.screen.on h1 b{animation:drop .55s cubic-bezier(.3,1.5,.5,1) both}
+.screen.on h1 i{animation:drop .55s .12s cubic-bezier(.3,1.5,.5,1) both}
+h2{margin:0;font-size:clamp(22px,3.6vh,28px);font-weight:900}
+.sub{margin:0;font-size:clamp(14px,2.2vh,17px);opacity:.75}
+.gold{color:var(--gold);font-size:clamp(14px,2.2vh,17px);margin:0;min-height:1.2em}
+.ctl{display:flex;flex-direction:column;gap:clamp(12px,2.4vh,20px)}
+
+.btn{border:0;border-radius:18px;padding:clamp(12px,2.2vh,16px) 20px;font-weight:900;font-size:clamp(16px,2.4vh,19px);
+  background:#4a4f9a;border-bottom:5px solid #2d3070;box-shadow:inset 0 2px 0 rgba(255,255,255,.25);transition:transform .08s}
+.btn:active{transform:translateY(3px);border-bottom-width:2px}
+.btn.main{background:linear-gradient(#ffe066,#ffb800);border-bottom-color:#b57a00;color:#2b1d00;font-size:clamp(20px,3.2vh,25px);box-shadow:inset 0 2px 0 rgba(255,255,255,.5)}
+.btn.ad{background:linear-gradient(#6cf092,#25b85a);border-bottom-color:#17803d;color:#06280f}
+#mPlay{animation:glow 2s infinite}
+.ic{width:54px;height:54px;border-radius:50%;border:1.5px solid rgba(255,255,255,.22);background:rgba(255,255,255,.12);
+  display:grid;place-items:center;font-weight:900;font-size:22px;transition:transform .08s}
+.ic:active{transform:scale(.92)}
+.row{display:flex;gap:14px;justify-content:center;align-items:center}
+.snd.off .w,.snd:not(.off) .x{display:none}
+
+/* Game over */
+.medal{margin:0 auto;width:clamp(120px,24vh,170px);aspect-ratio:1;border-radius:50%;display:grid;place-content:center;
+  background:radial-gradient(circle at 30% 25%,#3d4290,#1a1d48);
+  box-shadow:0 0 0 5px var(--gold),0 0 0 10px rgba(255,217,61,.22),0 12px 26px rgba(0,0,0,.45)}
+.medal b{font-size:clamp(48px,9.5vh,72px);font-weight:900;line-height:1}
+.medal small{font-size:13px;opacity:.7}
+.ribbon{margin:0 auto;padding:7px 16px;border-radius:999px;background:linear-gradient(#ffe066,#ffb800);color:#2b1d00;
+  font-size:15px;font-weight:900;animation:breathe 1.4s infinite}
+
+/* Temas */
+#thGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.th{position:relative;border:3px solid transparent;border-radius:18px;aspect-ratio:1;overflow:hidden;padding:6px;background:var(--g);
+  display:flex;align-items:flex-end;justify-content:center;font-size:13px;font-weight:800;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+.th.sel{border-color:#fff}
+.th.sel::before{content:"✓";position:absolute;top:5px;right:5px;width:20px;height:20px;border-radius:50%;background:#fff;color:#1a1d48;
+  font-size:13px;display:grid;place-items:center;text-shadow:none}
+.th.lock::after{content:attr(data-need);position:absolute;inset:0;background:rgba(10,12,30,.8);display:grid;place-items:center;font-size:13px;text-shadow:none}
+ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:12px;text-align:left;font-size:clamp(15px,2.3vh,18px);line-height:1.35}
+
+#menu .ic{width:min(54px,15vw);height:min(54px,15vw)}
+#menu .row{gap:clamp(8px,2.4vw,14px)}
+.list{display:flex;flex-direction:column;gap:8px;max-height:52vh;overflow:auto;text-align:left}
+.lg{display:flex;justify-content:space-between;align-items:center;width:100%;padding:13px 16px;border:2px solid transparent;border-radius:14px;background:rgba(255,255,255,.08);font-weight:800;font-size:clamp(15px,2.3vh,18px)}
+.lg.sel{border-color:var(--gold)}
+.lg.sel::after{content:"✓";color:var(--gold)}
+.st{display:flex;justify-content:space-between;gap:12px;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.08);font-size:clamp(14px,2.2vh,17px)}
+.st b{color:var(--gold)}
+button:focus-visible{outline:3px solid #fff;outline-offset:3px}
+#count{position:fixed;inset:0;display:none;place-items:center;pointer-events:none;font-size:clamp(90px,24vmin,180px);font-weight:900;text-shadow:0 6px 0 rgba(0,0,0,.3)}
+#count.on{display:grid}
+#count span{animation:cd .65s ease-out}
+.stats{display:flex;justify-content:center}
+.sw{display:flex;align-items:center;justify-content:space-between;width:100%;padding:14px 16px;border:0;border-radius:16px;background:rgba(255,255,255,.08);font-weight:800;font-size:clamp(15px,2.3vh,18px)}
+.sw i{width:46px;height:28px;border-radius:14px;background:rgba(255,255,255,.2);position:relative;transition:.2s}
+.sw i::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:.2s}
+.sw.on i{background:#25b85a}
+.sw.on i::after{transform:translateX(18px)}
+.link{background:none;border:0;color:#fff;opacity:.65;font-size:14px;text-decoration:underline}
+@keyframes cd{from{opacity:0;transform:scale(1.7)}to{opacity:1;transform:none}}
+@media (max-height:430px){h1{font-size:38px}.sub{display:none}.medal{width:100px}.medal b{font-size:40px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes pin{from{opacity:0;transform:scale(.9) translateY(14px)}to{opacity:1;transform:none}}
+@keyframes drop{from{opacity:0;transform:translateY(-30px) scale(.9)}to{opacity:1;transform:none}}
+@keyframes pop{50%{transform:scale(1.2)}}
+@keyframes up{0%{opacity:0;transform:translateY(8px)}20%{opacity:1}100%{opacity:0;transform:translateY(-28px)}}
+@keyframes breathe{50%{opacity:.6}}
+@keyframes glow{50%{box-shadow:inset 0 2px 0 rgba(255,255,255,.5),0 0 28px rgba(255,200,40,.55)}}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="hud">
+  <div class="chip"><svg viewBox="0 0 24 24"><path d="M3 18h18l1-11-5 4-5-7-5 7-5-4z"/></svg><span id="chipN">0</span></div>
+  <div id="score">0</div>
+  <div id="pips"><span></span><span></span><span></span></div>
+  <div id="toast"></div>
+  <div id="hint" data-i="23">Tap to drop the block</div>
+  <button class="ic" id="pauseBtn" aria-label="Pausa"><svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1.5"/><rect x="14" y="5" width="4" height="14" rx="1.5"/></svg></button>
+</div>
+
+<div id="count"></div>
+<div class="screen on" id="menu"><div class="card">
+  <div class="logo"><h1><b>Torre</b><i>Perfecta</i></h1><div class="row" id="menuBest" style="gap:8px;flex-wrap:wrap"></div></div>
+  <div class="ctl">
+    <button class="btn main" id="mPlay" data-i="0">Play</button>
+    <div class="row">
+      <button class="ic" id="mThemes" aria-label="Temas"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2" opacity=".5"/></svg></button>
+      <button class="ic" id="mStats" aria-label="Stats"><svg viewBox="0 0 24 24"><path d="M5 9h4v11H5zm5-5h4v16h-4zm5 8h4v8h-4z"/></svg></button>
+      <button class="ic" id="mLang" aria-label="Language"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm6.93 6h-2.95a15.65 15.65 0 0 0-1.38-3.56A8.03 8.03 0 0 1 18.92 8zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14C4.1 13.36 4 12.69 4 12s.1-1.36.26-2h3.38c-.08.66-.14 1.32-.14 2s.06 1.34.14 2H4.26zm.82 2h2.95c.32 1.25.78 2.45 1.38 3.56A7.987 7.987 0 0 1 5.08 16zm2.95-8H5.08a7.987 7.987 0 0 1 4.33-3.56A15.65 15.65 0 0 0 8.03 8zM12 19.96c-.83-1.2-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.76-1.91 3.96zM14.34 14H9.66c-.09-.66-.16-1.32-.16-2s.07-1.35.16-2h4.68c.09.65.16 1.32.16 2s-.07 1.34-.16 2zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95a8.03 8.03 0 0 1-4.33 3.56zM16.36 14c.08-.66.14-1.32.14-2s-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2h-3.38z"/></svg></button>
+      <button class="ic" id="mSet" aria-label="Ajustes"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></button>
+      <button class="ic" id="mHelp" aria-label="Cómo jugar">?</button>
+    </div>
+  </div>
+</div></div>
+
+<div class="screen" id="pause"><div class="card panel">
+  <h2 data-i="3">Pause</h2>
+  <button class="btn main" id="pResume" data-i="4">Resume</button>
+  <div class="row"><button class="btn" id="pMenu" style="flex:1" data-i="5">Menu</button>
+  <button class="ic snd" aria-label="Sonido"><svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 4V5L7 9H3z"/><path class="w" d="M15 8.5a5 5 0 0 1 0 7M17.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="x" d="M16 9l6 6M22 9l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
+</div></div>
+
+<div class="screen" id="over"><div class="card panel">
+  <div class="medal"><b id="ovScore">0</b><small data-i="6">floors</small></div>
+  <p id="ovBest"></p>
+  <div class="stats"><span class="chip" id="ovPerf"></span></div>
+  <p class="gold" id="ovTheme"></p>
+  <button class="btn ad" id="ovCont" data-i="8">Continue with ad</button>
+  <button class="btn main" id="ovPlay" data-i="9">Play again</button>
+  <div class="row"><button class="btn" id="ovMenu" style="flex:1" data-i="5">Menu</button>
+  <button class="ic" id="ovShare" aria-label="Compartir"><svg viewBox="0 0 24 24"><path d="M18 16a3 3 0 0 0-2.4 1.2l-6.3-3.6a3 3 0 0 0 0-3.2l6.3-3.6A3 3 0 1 0 15 5a3 3 0 0 0 .1.8L8.7 9.4a3 3 0 1 0 0 5.2l6.4 3.7A3 3 0 1 0 18 16z"/></svg></button></div>
+</div></div>
+
+<div class="screen" id="stats"><div class="card panel">
+  <h2 data-i="35">Stats</h2><div class="list" id="stList"></div>
+  <button class="btn" data-close data-i="12">Close</button>
+</div></div>
+
+<div class="screen" id="langs"><div class="card panel">
+  <h2 data-i="22">Language</h2><div class="list" id="lgList"></div>
+  <button class="btn" data-close data-i="12">Close</button>
+</div></div>
+
+<div class="screen" id="settings"><div class="card panel">
+  <h2 data-i="18">Settings</h2>
+  <button class="sw on" id="swSnd"><span data-i="19">Sound</span><i></i></button>
+  <button class="sw on" id="swVib"><span data-i="20">Vibration</span><i></i></button>
+  <button class="link" id="rate" data-i="41">Rate the game</button>
+  <button class="link" id="privacy" data-i="21">Privacy policy</button>
+  <button class="link" id="terms" data-i="42">Terms of use</button>
+  <button class="btn" data-close data-i="12">Close</button>
+</div></div>
+
+<div class="screen" id="themes"><div class="card panel">
+  <h2 data-i="10">Themes</h2>
+  <p class="sub" data-i="11">Unlock more with your best score</p>
+  <div id="thGrid"></div>
+  <button class="btn" data-close data-i="12">Close</button>
+</div></div>
+
+<div class="screen" id="help"><div class="card panel">
+  <h2 data-i="13">How to play</h2>
+  <ul>
+    <li data-i="14">Tap the screen to drop the block.</li>
+    <li data-i="15">Anything overhanging gets cut.</li>
+    <li data-i="16">Three perfect drops give width back.</li>
+  </ul>
+  <button class="btn" data-close data-i="17">Got it</button>
+</div></div>
+
+<script>
+/* ============ ANUNCIOS: conecta aquí tu SDK (AdMob) ============ */
+const ADMOB_TEST=false;  // false = anuncios REALES. Pon true solo para probar en tu teléfono sin riesgo
+const AD_INTERSTITIAL_ID='ca-app-pub-7768094116195335/7094597702';  // ID REAL del intersticial
+const AD_REWARDED_ID='ca-app-pub-7768094116195335/3107251230';      // ID REAL del recompensado
+const ADS_EVERY_N_GAMES=3;
+const PRIVACY_URL='https://sites.google.com/view/torreperfecta/privacidad';
+const TERMS_URL='https://sites.google.com/view/torreperfecta/terminos';
+const STORE_URL='';                                     // <- enlace de tu juego en Play Store
+const plug=n=>{try{const C=window.Capacitor;if(!C||!(C.isNativePlatform&&C.isNativePlatform()))return null;return(C.Plugins&&C.Plugins[n])||(C.registerPlugin&&C.registerPlugin(n))||null}catch(e){return null}};
+const AdMob=plug('AdMob'),AppPlugin=plug('App'),BrowserP=plug('Browser');
+function openUrl(u){
+  try{ if(BrowserP)BrowserP.open({url:u}).catch(()=>window.open(u,'_blank')); else window.open(u,'_blank'); }catch(e){}
+}
+let adsReady=false,rewReady=false;
+const loadInter=()=>{if(adsReady)AdMob.prepareInterstitial({adId:AD_INTERSTITIAL_ID,isTesting:ADMOB_TEST}).catch(()=>setTimeout(loadInter,30000))};
+const loadRew=()=>{if(adsReady)AdMob.prepareRewardVideoAd({adId:AD_REWARDED_ID,isTesting:ADMOB_TEST}).then(()=>{rewReady=true}).catch(()=>{rewReady=false;setTimeout(loadRew,30000)})};
+async function initAds(){
+  if(!AdMob)return;
+  try{
+    let info=await AdMob.requestConsentInfo();
+    if(info.isConsentFormAvailable&&info.status==='REQUIRED')info=await AdMob.showConsentForm();
+    if(info.canRequestAds===false)return;
+    await AdMob.initialize();
+    adsReady=true;
+    AdMob.addListener('interstitialAdDismissed',loadInter);
+    loadInter();loadRew();
+  }catch(e){}
+}
+function showInterstitial(){
+  if(!adsReady)return;
+  AdMob.showInterstitial().catch(loadInter);
+}
+function showRewarded(onReward){   // onReward() solo si el jugador completó el anuncio
+  if(!AdMob){onReward();return}    // navegador (pruebas): concede directamente
+  if(!adsReady||!rewReady)return;
+  let earned=false,fin=false,hs=[];
+  const done=()=>{if(fin)return;fin=true;hs.forEach(h=>h&&h.remove&&h.remove());rewReady=false;loadRew();if(earned)onReward()};
+  Promise.all([
+    AdMob.addListener('onRewardedVideoAdReward',()=>{earned=true}),
+    AdMob.addListener('onRewardedVideoAdDismissed',done),
+    AdMob.addListener('onRewardedVideoAdFailedToShow',done)
+  ]).then(h=>{hs=h;return AdMob.showRewardVideoAd()}).catch(done);
+}
+
+/* ============ UTILIDADES ============ */
+const $=id=>document.getElementById(id);
+const store={
+  get(k,d){try{const v=localStorage.getItem('tp_'+k);return v===null?d:JSON.parse(v)}catch(e){return d}},
+  set(k,v){try{localStorage.setItem('tp_'+k,JSON.stringify(v))}catch(e){}}
+};
+/* ============ IDIOMAS (inglés por defecto) ============ */
+const LANGS={
+en:["Play","Stack without falling","Best","Pause","Resume","Menu","floors","New record!","Continue with ad","Play again","Themes","Unlock more with your best score","Close","How to play","Tap the screen to drop the block.","Anything overhanging gets cut. Line it up to keep your width.","Three perfect drops in a row give width back.","Got it","Settings","Sound","Vibration","Privacy policy","Language","Tap to drop the block","Perfect","Theme unlocked","Next theme","Perfects","I reached {n} floors in Torre Perfecta. Can you beat me?","Neon","Sunset","Ocean","Forest","Candy","Ice","Stats","Games played","Total floors","Perfect drops","Best perfect streak","Daily streak","Rate the game","Terms of use"],
+es:["Jugar","Apila sin fallar","Récord","Pausa","Continuar","Menú","pisos","¡Nuevo récord!","Continuar con anuncio","Jugar de nuevo","Temas","Desbloquea más con tu récord","Cerrar","Cómo jugar","Toca la pantalla para soltar el bloque.","Lo que sobresale se corta. Alinea bien para conservar el ancho.","Tres aciertos perfectos seguidos devuelven ancho al bloque.","Entendido","Ajustes","Sonido","Vibración","Política de privacidad","Idioma","Toca para soltar el bloque","Perfecto","Tema desbloqueado","Próximo tema","Perfectos","Llegué a {n} pisos en Torre Perfecta. ¿Puedes superarme?","Neón","Atardecer","Océano","Bosque","Caramelo","Hielo","Estadísticas","Partidas jugadas","Pisos totales","Aciertos perfectos","Mejor racha perfecta","Racha diaria","Valorar el juego","Términos de uso"],
+pt:["Jogar","Empilhe sem errar","Recorde","Pausa","Continuar","Menu","andares","Novo recorde!","Continuar com anúncio","Jogar de novo","Temas","Desbloqueie mais com seu recorde","Fechar","Como jogar","Toque na tela para soltar o bloco.","O que sobra é cortado. Alinhe bem para manter a largura.","Três acertos perfeitos seguidos devolvem largura ao bloco.","Entendi","Configurações","Som","Vibração","Política de privacidade","Idioma","Toque para soltar o bloco","Perfeito","Tema desbloqueado","Próximo tema","Perfeitos","Cheguei a {n} andares no Torre Perfecta. Consegue me superar?","Neon","Pôr do sol","Oceano","Floresta","Doce","Gelo","Estatísticas","Partidas jogadas","Total de andares","Acertos perfeitos","Maior sequência perfeita","Sequência diária","Avaliar o jogo","Termos de uso"],
+hi:["खेलें","बिना गिरे ऊपर रखें","सर्वश्रेष्ठ","रोकें","जारी रखें","मेनू","मंज़िलें","नया रिकॉर्ड!","विज्ञापन देखकर जारी रखें","फिर खेलें","थीम","अपने रिकॉर्ड से और अनलॉक करें","बंद करें","कैसे खेलें","ब्लॉक गिराने के लिए स्क्रीन पर टैप करें।","जो हिस्सा बाहर निकलेगा वह कट जाएगा। चौड़ाई बचाने के लिए सही मिलाएँ।","लगातार तीन परफेक्ट ड्रॉप से चौड़ाई वापस मिलती है।","समझ गया","सेटिंग्स","ध्वनि","कंपन","गोपनीयता नीति","भाषा","ब्लॉक गिराने के लिए टैप करें","परफेक्ट","थीम अनलॉक हुई","अगली थीम","परफेक्ट","Torre Perfecta में मेरा स्कोर {n} मंज़िल है। क्या आप हरा सकते हैं?","नियॉन","सूर्यास्त","सागर","जंगल","कैंडी","बर्फ़","आँकड़े","खेले गए गेम","कुल मंज़िलें","परफेक्ट ड्रॉप","सबसे लंबी परफेक्ट लड़ी","दैनिक लगातार दिन","गेम को रेट करें","उपयोग की शर्तें"],
+id:["Main","Susun tanpa jatuh","Rekor","Jeda","Lanjut","Menu","lantai","Rekor baru!","Lanjut dengan iklan","Main lagi","Tema","Buka lebih banyak dengan rekormu","Tutup","Cara bermain","Ketuk layar untuk menjatuhkan blok.","Bagian yang menjorok akan terpotong. Sejajarkan agar lebarnya tetap.","Tiga jatuhan sempurna berturut-turut mengembalikan lebar.","Mengerti","Pengaturan","Suara","Getar","Kebijakan privasi","Bahasa","Ketuk untuk menjatuhkan blok","Sempurna","Tema terbuka","Tema berikutnya","Sempurna","Aku mencapai {n} lantai di Torre Perfecta. Bisa kalahkan aku?","Neon","Senja","Samudra","Hutan","Permen","Es","Statistik","Permainan dimainkan","Total lantai","Jatuhan sempurna","Rangkaian sempurna terbaik","Rangkaian harian","Nilai game ini","Ketentuan penggunaan"],
+ru:["Играть","Складывай без промахов","Рекорд","Пауза","Продолжить","Меню","этажей","Новый рекорд!","Продолжить с рекламой","Играть снова","Темы","Открывай новые за рекорд","Закрыть","Как играть","Коснись экрана, чтобы сбросить блок.","Всё, что выступает, отрезается. Выравнивай точно, чтобы сохранить ширину.","Три идеальных сброса подряд возвращают ширину.","Понятно","Настройки","Звук","Вибрация","Политика конфиденциальности","Язык","Коснись, чтобы сбросить блок","Идеально","Тема открыта","Следующая тема","Идеальных","Мой результат — {n} этажей в Torre Perfecta. Сможешь побить?","Неон","Закат","Океан","Лес","Конфета","Лёд","Статистика","Сыграно игр","Всего этажей","Идеальные сбросы","Лучшая серия идеальных","Серия по дням","Оценить игру","Условия использования"],
+tr:["Oyna","Düşürmeden istifle","Rekor","Duraklat","Devam","Menü","kat","Yeni rekor!","Reklamla devam et","Tekrar oyna","Temalar","Rekorunla yenilerini aç","Kapat","Nasıl oynanır","Bloğu bırakmak için ekrana dokun.","Taşan kısım kesilir. Genişliğini korumak için iyi hizala.","Üst üste üç mükemmel bırakış genişliği geri verir.","Anladım","Ayarlar","Ses","Titreşim","Gizlilik politikası","Dil","Bloğu bırakmak için dokun","Mükemmel","Tema açıldı","Sonraki tema","Mükemmel","Torre Perfecta'da {n} kata ulaştım. Beni geçebilir misin?","Neon","Gün batımı","Okyanus","Orman","Şeker","Buz","İstatistikler","Oynanan oyun","Toplam kat","Mükemmel bırakış","En iyi mükemmel seri","Günlük seri","Oyunu puanla","Kullanım koşulları"],
+fr:["Jouer","Empilez sans tomber","Record","Pause","Reprendre","Menu","étages","Nouveau record !","Continuer avec une pub","Rejouer","Thèmes","Débloquez-en plus avec votre record","Fermer","Comment jouer","Touchez l'écran pour lâcher le bloc.","Ce qui dépasse est coupé. Alignez bien pour garder la largeur.","Trois lâchers parfaits d'affilée redonnent de la largeur.","Compris","Réglages","Son","Vibration","Politique de confidentialité","Langue","Touchez pour lâcher le bloc","Parfait","Thème débloqué","Thème suivant","Parfaits","J'ai atteint {n} étages dans Torre Perfecta. Saurez-vous me battre ?","Néon","Coucher de soleil","Océan","Forêt","Bonbon","Glace","Statistiques","Parties jouées","Étages au total","Lâchers parfaits","Meilleure série parfaite","Série quotidienne","Noter le jeu","Conditions d'utilisation"],
+de:["Spielen","Stapeln ohne Fehler","Rekord","Pause","Weiter","Menü","Etagen","Neuer Rekord!","Mit Werbung weiterspielen","Nochmal spielen","Designs","Mehr freischalten mit deinem Rekord","Schließen","So wird gespielt","Tippe auf den Bildschirm, um den Block fallen zu lassen.","Was übersteht, wird abgeschnitten. Richte ihn genau aus, um die Breite zu behalten.","Drei perfekte Treffer in Folge geben Breite zurück.","Verstanden","Einstellungen","Ton","Vibration","Datenschutzerklärung","Sprache","Tippen, um den Block fallen zu lassen","Perfekt","Design freigeschaltet","Nächstes Design","Perfekte","Ich habe {n} Etagen in Torre Perfecta erreicht. Kannst du mich schlagen?","Neon","Sonnenuntergang","Ozean","Wald","Bonbon","Eis","Statistiken","Gespielte Runden","Etagen gesamt","Perfekte Treffer","Beste perfekte Serie","Tägliche Serie","Spiel bewerten","Nutzungsbedingungen"],
+ja:["プレイ","落とさず積み上げよう","ベスト","一時停止","再開","メニュー","階","新記録！","広告を見て続ける","もう一度","テーマ","記録を伸ばして解放しよう","閉じる","遊び方","画面をタップしてブロックを落とします。","はみ出した部分は切り落とされます。ぴったり合わせて幅を保ちましょう。","パーフェクトを3回連続で決めると幅が戻ります。","わかった","設定","サウンド","バイブレーション","プライバシーポリシー","言語","タップしてブロックを落とす","パーフェクト","テーマ解放","次のテーマ","パーフェクト","Torre Perfectaで{n}階に到達！超えられるかな？","ネオン","夕焼け","海","森","キャンディ","氷","統計","プレイ回数","合計階数","パーフェクト回数","最長パーフェクト連続","毎日連続","ゲームを評価","利用規約"]
+};
+const LANG_NAMES={en:"English",es:"Español",pt:"Português",hi:"हिन्दी",id:"Bahasa Indonesia",ru:"Русский",tr:"Türkçe",fr:"Français",de:"Deutsch",ja:"日本語"};
+const AUTO_DETECT_LANGUAGE=true;   // true: usa el idioma del teléfono si existe; false: siempre inglés hasta que el jugador elija
+let lang="en";
+const tr=i=>(LANGS[lang]&&LANGS[lang][i])||LANGS.en[i];
+const tn=i=>tr(29+i);              // nombre traducido del tema i
+const THEMES=[
+  {n:'Neón',h:210,st:14,s:75,bh:235,bs:45,u:0},
+  {n:'Atardecer',h:340,st:8,s:85,bh:330,bs:50,u:10},
+  {n:'Océano',h:170,st:6,s:70,bh:200,bs:55,u:25},
+  {n:'Bosque',h:100,st:7,s:55,bh:140,bs:35,u:40},
+  {n:'Caramelo',h:295,st:20,s:80,bh:285,bs:40,u:60},
+  {n:'Hielo',h:190,st:4,s:45,bh:215,bs:30,u:100}
+];
+let best=store.get('best',0),soundOn=store.get('sound',true),vibOn=store.get('vib',true),themeIdx=store.get('theme',0),seen=store.get('seen',false);
+if(!THEMES[themeIdx]||best<THEMES[themeIdx].u)themeIdx=0;
+lang=store.get("lang",null);
+if(!LANGS[lang]){lang="en";if(AUTO_DETECT_LANGUAGE){const c=String(navigator.language||"en").slice(0,2).toLowerCase();if(LANGS[c])lang=c}}
+const stats=store.get("stats",{g:0,f:0,p:0,c:0});
+let dstreak=1;
+(function(){
+  const d=Math.floor((Date.now()-new Date().getTimezoneOffset()*60000)/864e5),last=store.get("day",0);
+  let n=store.get("dstreak",0);
+  if(last!==d){n=(last===d-1)?n+1:1;store.set("day",d);store.set("dstreak",n)}
+  dstreak=n||1;
+})();
+const TH=()=>THEMES[themeIdx];
+const col=(i,l,t)=>{t=t||TH();return `hsl(${(t.h+i*t.st)%360},${t.s}%,${l}%)`};
+const CROWN='<svg viewBox="0 0 24 24"><path d="M3 18h18l1-11-5 4-5-7-5 7-5-4z"/></svg>';
+
+let ac=null;
+function sfx(f,d=.1,type='sine',v=.14){
+  if(!soundOn)return;
+  try{
+    ac=ac||new (window.AudioContext||window.webkitAudioContext)();
+    if(ac.state==='suspended')ac.resume();
+    const o=ac.createOscillator(),g=ac.createGain();
+    o.type=type;o.frequency.value=f;g.gain.value=v;
+    g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);
+    o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+d);
+  }catch(e){}
+}
+const buzz=ms=>{if(vibOn&&navigator.vibrate)navigator.vibrate(ms)};
+
+/* ============ ESTADO Y ESCALA ============ */
+const cv=$('c'),ctx=cv.getContext('2d');
+const BASE=400,BH=30;
+let S=1,ox=0,H=800,DPR=1;
+let blocks=[],cur=null,dir=1,speed=130,score=0,combo=0,state='menu',cam=0,camT=0;
+let debris=[],rings=[],parts=[],shake=0,flash=0,lock=0,finished=0,lastAd=0,contUsed=false,startBest=0,perfects=0;
+const stars=Array.from({length:70},()=>({x:Math.random(),y:Math.random(),s:Math.random()*1.6+.5}));
+
+const baseY=()=>H-Math.min(Math.max(H*.2,110),200);
+const yOf=i=>baseY()-i*BH+cam;
+const setCam=()=>{camT=Math.max(0,H*.42-baseY()+(blocks.length-1)*BH)};
+function resize(){
+  const w=innerWidth||document.documentElement.clientWidth||360;
+  const h=innerHeight||document.documentElement.clientHeight||640;
+  DPR=Math.min(devicePixelRatio||1,2);
+  cv.width=Math.max(1,Math.round(w*DPR));cv.height=Math.max(1,Math.round(h*DPR));
+  const gw=Math.min(w,h*.8);
+  S=gw/BASE*DPR;ox=(cv.width-gw*DPR)/2;H=cv.height/S;
+  if(blocks.length){setCam();if(!isFinite(cam))cam=camT}
+}
+addEventListener('resize',resize);
+
+/* ============ LÓGICA ============ */
+function spawn(){
+  const top=blocks[blocks.length-1];
+  dir=Math.random()<.5?1:-1;
+  speed=state==='menu'?110:Math.min(130+blocks.length*4,380);
+  cur={x:dir>0?-top.w:BASE,w:top.w,i:top.i+1};
+}
+function reset(){
+  blocks=[{x:100,w:200,i:0}];score=0;combo=0;debris=[];rings=[];parts=[];cam=0;
+  setCam();spawn();setScore(0);
+}
+function demo(){
+  blocks=[];for(let i=0;i<6;i++)blocks.push({x:100+Math.random()*30-15,w:200-i*6,i});
+  debris=[];rings=[];parts=[];state='menu';setCam();cam=camT;spawn();
+}
+function setScore(n){
+  const e=$('score');e.textContent=n;e.classList.remove('pop');void e.offsetWidth;e.classList.add('pop');
+  [...$('pips').children].forEach((s,k)=>s.classList.toggle('on',k<Math.min(combo,3)));
+  $('pips').classList.toggle('full',combo>=3);
+  $('chipN').textContent=best;
+}
+function toast(t){const e=$('toast');e.textContent=t;e.classList.remove('go');void e.offsetWidth;e.classList.add('go')}
+function burst(x,y,n,c,v){
+  for(let k=0;k<n;k++){const a=Math.random()*6.28,s=(.3+Math.random())*v;
+    parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-v*.3,l:1,c,s:2+Math.random()*3})}
+}
+
+function drop(){
+  if(state!=='play'||performance.now()<lock)return;
+  if(!seen){seen=true;store.set('seen',true);$('hint').style.display='none'}
+  const top=blocks[blocks.length-1];
+  const l=Math.max(cur.x,top.x),r=Math.min(cur.x+cur.w,top.x+top.w),ov=r-l;
+  if(ov<=0){debris.push({x:cur.x,y:yOf(cur.i),w:cur.w,vy:0,vx:dir*40,i:cur.i});return end()}
+  if(Math.abs(cur.x-top.x)<6){
+    combo++;perfects++;if(combo>stats.c)stats.c=combo;cur.x=top.x;
+    if(combo>=3&&cur.w<200){cur.x=Math.max(0,cur.x-5);cur.w=Math.min(200,cur.w+10)}
+    flash=1;rings.push({x:cur.x,y:yOf(cur.i),w:cur.w,t:0});
+    burst(cur.x+cur.w/2,yOf(cur.i)+BH/2,combo>=3?22:12,col(cur.i,75),160);
+    toast(combo>1?tr(24)+' x'+combo:tr(24));
+    sfx(520+Math.min(combo,8)*55,.18,'triangle');buzz(12);
+  }else{
+    combo=0;
+    if(cur.x<top.x)debris.push({x:cur.x,y:yOf(cur.i),w:top.x-cur.x,vy:0,vx:-50,i:cur.i});
+    else debris.push({x:top.x+top.w,y:yOf(cur.i),w:cur.x+cur.w-top.x-top.w,vy:0,vx:50,i:cur.i});
+    cur.x=l;cur.w=ov;sfx(300,.08,'square',.08);
+  }
+  blocks.push({x:cur.x,w:cur.w,i:cur.i});
+  score++;if(score>best){best=score;store.set('best',best)}
+  if(score%10===0)toast(score+' '+tr(6));
+  const nt=THEMES.find(t=>t.u===score&&t.u>startBest);if(nt)toast(tr(25)+': '+tn(THEMES.indexOf(nt)));
+  setScore(score);setCam();spawn();
+}
+function end(){
+  state='over';shake=12;combo=0;finished++;
+  stats.g++;stats.f+=score;stats.p+=perfects;store.set('stats',stats);
+  sfx(150,.4,'sawtooth',.16);buzz(80);
+  const isNew=score>0&&score>startBest;
+  const unlocked=THEMES.filter(t=>t.u>startBest&&t.u<=best).map(t=>tn(THEMES.indexOf(t)));
+  $('ovScore').textContent=0;
+  $('ovBest').className=isNew?'ribbon':'sub';
+  $('ovBest').textContent=isNew?tr(7):tr(2)+' '+best;
+  const nx=THEMES.find(t=>t.u>best);
+  $('ovTheme').textContent=unlocked.length?tr(25)+': '+unlocked.join(', '):(nx?tr(26)+': '+nx.u+' '+tr(6):'');
+  $('ovPerf').textContent='★ '+tr(27)+': '+perfects;
+  $('ovCont').style.display=(!contUsed&&score>=5&&(!AdMob||rewReady))?'':'none';
+  document.body.classList.remove('play');
+  setTimeout(()=>{
+    if(state!=='over')return;
+    show('over');countUp($('ovScore'),score);
+    if(isNew)for(let k=0;k<70;k++)parts.push({x:Math.random()*BASE,y:-10,vx:(Math.random()-.5)*80,vy:Math.random()*60,l:2.2,c:col(k,62),s:3+Math.random()*3});
+  },650);
+}
+function countUp(el,n){
+  const t0=performance.now();
+  (function f(t){const k=Math.min(1,(t-t0)/600);el.textContent=Math.round(n*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(f)})(t0);
+}
+
+/* ============ FLUJO DE PANTALLAS ============ */
+const show=id=>document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));
+function maybeAd(){
+  if(finished>0&&finished%ADS_EVERY_N_GAMES===0&&lastAd!==finished){lastAd=finished;showInterstitial()}
+}
+function startGame(){
+  maybeAd();startBest=best;contUsed=false;perfects=0;reset();state='play';
+  lock=performance.now()+250;show(null);document.body.classList.add('play');
+  $('hint').style.display=seen?'none':'';$('toast').classList.remove('go');
+}
+function goMenu(){
+  demo();
+  renderMenu();
+  document.body.classList.remove('play');show('menu');
+}
+function pause(){if(state!=='play')return;state='pause';show('pause')}
+function countdown(cb){
+  state='count';show(null);document.body.classList.add('play');
+  const c=$('count');c.classList.add('on');let n=3;
+  (function tick(){
+    if(n===0){c.classList.remove('on');cb();return}
+    c.innerHTML='<span>'+n+'</span>';sfx(380+(3-n)*90,.1,'triangle');n--;setTimeout(tick,650);
+  })();
+}
+function resume(){if(state!=='pause')return;countdown(()=>{state='play';lock=performance.now()+150})}
+function buildThemes(){
+  const g=$('thGrid');g.innerHTML='';
+  THEMES.forEach((t,i)=>{
+    const b=document.createElement('button'),locked=best<t.u;
+    b.className='th'+(i===themeIdx?' sel':'')+(locked?' lock':'');
+    if(locked)b.dataset.need='🔒 '+t.u+' '+tr(6);
+    b.style.setProperty('--g',`linear-gradient(to top,${col(0,50,t)} 0 25%,${col(3,57,t)} 25% 50%,${col(6,64,t)} 50% 75%,${col(9,71,t)} 75%)`);
+    b.textContent=tn(i);
+    b.onclick=()=>{if(locked)return;themeIdx=i;store.set('theme',i);buildThemes();sfx(600,.08)};
+    g.appendChild(b);
+  });
+}
+const syncSound=()=>{document.querySelectorAll('.snd').forEach(b=>b.classList.toggle('off',!soundOn));$('swSnd').classList.toggle('on',soundOn);$('swVib').classList.toggle('on',vibOn)};
+
+const FLAME='<svg viewBox="0 0 24 24" style="color:#ff8a3d"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z"/></svg>';
+function renderMenu(){
+  const chip=(ic,x)=>'<div class="chip">'+ic+'<span>'+x+'</span></div>';
+  $('menuBest').innerHTML=(best>0?chip(CROWN,tr(2)+' '+best):chip('',tr(1)))+chip(FLAME,dstreak);
+}
+function applyLang(){
+  document.documentElement.lang=lang;
+  document.querySelectorAll('[data-i]').forEach(e=>{e.textContent=tr(+e.dataset.i)});
+  if(state==='menu')renderMenu();
+}
+function buildLangs(){
+  const g=$('lgList');g.innerHTML='';
+  Object.keys(LANGS).forEach(c=>{
+    const b=document.createElement('button');
+    b.className='lg'+(c===lang?' sel':'');b.textContent=LANG_NAMES[c];
+    b.onclick=()=>{lang=c;store.set('lang',c);applyLang();buildLangs();sfx(600,.08)};
+    g.appendChild(b);
+  });
+}
+function buildStats(){
+  const rows=[[2,best],[36,stats.g],[37,stats.f],[38,stats.p],[39,stats.c],[40,dstreak]];
+  $('stList').innerHTML=rows.map(r=>'<div class="st"><span>'+tr(r[0])+'</span><b>'+r[1]+'</b></div>').join('');
+}
+
+/* ============ EVENTOS ============ */
+cv.addEventListener('pointerdown',e=>{e.preventDefault();drop()});
+addEventListener('keydown',e=>{
+  if(e.code==='Space'){e.preventDefault();drop()}
+  if(e.code==='Escape'){state==='play'?pause():resume()}
+});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)pause()});
+function onBack(){
+  if(state==='play'){pause();return}
+  if(state==='pause'){resume();return}
+  if(state==='count')return;
+  if(state==='over'){goMenu();return}
+  if(!$('menu').classList.contains('on')){show('menu');return}
+  try{AppPlugin.exitApp()}catch(e){}
+}
+document.addEventListener('backbutton',onBack);
+if(AppPlugin)Promise.resolve(AppPlugin.addListener('backButton',onBack)).catch(()=>{});
+$('mPlay').onclick=()=>{sfx(500,.08);startGame()};
+$('mThemes').onclick=()=>{buildThemes();show('themes')};
+$('mHelp').onclick=()=>show('help');
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>show('menu'));
+document.querySelectorAll('.snd').forEach(b=>b.onclick=()=>{soundOn=!soundOn;store.set('sound',soundOn);syncSound();sfx(600,.08)});
+$('pauseBtn').onclick=pause;
+$('mSet').onclick=()=>show('settings');
+$('mLang').onclick=()=>{buildLangs();show('langs')};
+$('mStats').onclick=()=>{buildStats();show('stats')};
+$('rate').onclick=()=>{openUrl(STORE_URL)};
+$('swSnd').onclick=()=>{soundOn=!soundOn;store.set('sound',soundOn);syncSound();sfx(600,.08)};
+$('swVib').onclick=()=>{vibOn=!vibOn;store.set('vib',vibOn);syncSound();buzz(30)};
+$('terms').onclick=()=>{openUrl(TERMS_URL)};
+$('privacy').onclick=()=>{openUrl(PRIVACY_URL)};
+$('ovShare').onclick=()=>{
+  const text=tr(28).replace('{n}',score);
+  try{
+    if(navigator.share)navigator.share({title:'Torre Perfecta',text,url:STORE_URL||undefined});
+    else if(navigator.clipboard)navigator.clipboard.writeText(text+(STORE_URL?' '+STORE_URL:''));
+  }catch(e){}
+};
+document.addEventListener('click',e=>{if(e.target.closest('button'))buzz(8)});
+$('pResume').onclick=resume;
+$('pMenu').onclick=goMenu;
+$('ovPlay').onclick=()=>{sfx(500,.08);startGame()};
+$('ovMenu').onclick=goMenu;
+$('ovCont').onclick=()=>showRewarded(()=>{contUsed=true;spawn();countdown(()=>{state='play';lock=performance.now()+150})});
+
+/* ============ DIBUJO ============ */
+const rr=(x,y,w,h,r)=>{ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,y,w,h,r);else ctx.rect(x,y,w,h)};
+function drawBlock(x,y,w,i,a){
+  if(!isFinite(x+y+w))return;
+  const h=BH-3;
+  ctx.globalAlpha=a||1;
+  ctx.fillStyle=col(i,28);rr(x+3,y+4,w,h,6);ctx.fill();
+  const g=ctx.createLinearGradient(0,y,0,y+h);
+  g.addColorStop(0,col(i,68));g.addColorStop(.45,col(i,56));g.addColorStop(1,col(i,45));
+  ctx.fillStyle=g;rr(x,y,w,h,6);ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.3)';rr(x+3,y+2.5,Math.max(w-6,0),4,2);ctx.fill();
+  ctx.globalAlpha=1;
+}
+function draw(now){
+  const t=TH(),alt=Math.min(blocks.length/35,1),hs=(t.bh+blocks.length*2)%360;
+  ctx.setTransform(1,0,0,1,0,0);
+  const g=ctx.createLinearGradient(0,0,0,cv.height);
+  g.addColorStop(0,`hsl(${hs},${t.bs}%,${13-alt*5}%)`);g.addColorStop(1,`hsl(${(hs+35)%360},${t.bs+8}%,30%)`);
+  ctx.fillStyle=g;ctx.fillRect(0,0,cv.width,cv.height);
+  // estrellas con parallax: aparecen más al subir
+  ctx.fillStyle='#fff';
+  for(const s of stars){
+    const y=((s.y*cv.height+cam*.1*s.s*DPR)%cv.height);
+    ctx.globalAlpha=(.12+alt*.7)*(.6+.4*Math.sin(now/700+s.x*20));
+    ctx.fillRect(s.x*cv.width,y,s.s*DPR,s.s*DPR);
+  }
+  ctx.globalAlpha=1;
+  if(flash>.02){ctx.fillStyle=`rgba(255,255,255,${flash*.16})`;ctx.fillRect(0,0,cv.width,cv.height)}
+
+  ctx.setTransform(S,0,0,S,ox,0);
+  if(shake>.5)ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);
+  const L=-ox/S,R=(cv.width-ox)/S;
+  const gy=yOf(0)+BH-2;                      // suelo
+  if(gy<H){ctx.fillStyle='rgba(0,0,0,.38)';ctx.fillRect(L,gy,R-L,H);
+    ctx.fillStyle='rgba(255,255,255,.14)';ctx.fillRect(L,gy,R-L,2)}
+  if(state!=='menu'&&state!=='over'&&startBest>0&&blocks.length-1<=startBest){ // meta de récord
+    const y=yOf(startBest)+BH-1;
+    ctx.strokeStyle='rgba(255,217,61,.7)';ctx.lineWidth=2;ctx.setLineDash([8,7]);
+    ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(R,y);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='rgba(255,217,61,.9)';ctx.font='800 12px system-ui,sans-serif';ctx.textAlign='right';
+    ctx.fillText(tr(2),Math.min(R-8,BASE-8),y-6);
+  }
+  for(const b of blocks){const y=yOf(b.i);if(y>-BH&&y<H+BH)drawBlock(b.x,y,b.w,b.i)}
+  if(cur&&state!=='over')drawBlock(cur.x,yOf(cur.i),cur.w,cur.i);
+  for(const d of debris)drawBlock(d.x,d.y,d.w,d.i,.85);
+  for(const r of rings){
+    ctx.strokeStyle=`rgba(255,255,255,${1-r.t})`;ctx.lineWidth=3;
+    rr(r.x-r.t*16,r.y-r.t*8,r.w+r.t*32,BH-3+r.t*16,6+r.t*6);ctx.stroke();
+  }
+  for(const p of parts){ctx.globalAlpha=Math.max(0,Math.min(1,p.l));ctx.fillStyle=p.c;ctx.fillRect(p.x,p.y,p.s,p.s)}
+  ctx.globalAlpha=1;
+}
+
+/* ============ BUCLE ============ */
+let last=performance.now();
+function loop(now){
+  const dt=Math.min((now-last)/1000,.05);last=now;
+  if(!isFinite(H)||!isFinite(cam)||!isFinite(camT)){resize();cam=isFinite(camT)?camT:0}
+  if(state!=='pause'){
+    cam+=(camT-cam)*Math.min(1,dt*5);
+    if(cur&&(state==='play'||state==='menu')){
+      cur.x+=dir*speed*dt;
+      if(cur.x+cur.w>BASE){cur.x=BASE-cur.w;dir=-1}
+      if(cur.x<0){cur.x=0;dir=1}
+    }
+    for(const d of debris){d.vy+=900*dt;d.y+=d.vy*dt;d.x+=d.vx*dt}
+    debris=debris.filter(d=>d.y<H+100);
+    for(const r of rings)r.t+=dt*2.5;
+    rings=rings.filter(r=>r.t<1);
+    for(const p of parts){p.vy+=500*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.l-=dt*1.4}
+    parts=parts.filter(p=>p.l>0&&p.y<H+20);
+    shake*=.9;flash*=.88;
+  }
+  draw(now);requestAnimationFrame(loop);
+}
+resize();applyLang();syncSound();$('rate').style.display=STORE_URL?'':'none';goMenu();initAds();requestAnimationFrame(loop);
+</script>
+</body>
+</html>

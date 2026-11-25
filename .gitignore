@@ -1,0 +1,28 @@
+# JavaScript dependencies
+node_modules/
+
+# Android build outputs and local machine settings
+android/.gradle/
+android/.kotlin/
+android/build/
+android/app/build/
+android/capacitor-cordova-android-plugins/build/
+android/local.properties
+
+# Signed application files
+*.apk
+*.aab
+*.aar
+
+# Signing keys and local secrets
+*.keystore
+*.jks
+*.p12
+*.pfx
+.env
+.env.*
+
+# Editor files
+.idea/
+*.iml
+.DS_Store

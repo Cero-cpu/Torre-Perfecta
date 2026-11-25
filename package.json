@@ -1,0 +1,20 @@
+{
+  "name": "torre-perfecta",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Torre Perfecta - juego de apilar bloques",
+  "dependencies": {
+    "@capacitor-community/admob": "^8.2.1",
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/browser": "^8.0.5",
+    "@capacitor/core": "^8.5.3"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.5.3"
+  },
+  "allowScripts": {
+    "sharp@0.32.6": true
+  }
+}

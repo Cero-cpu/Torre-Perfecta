@@ -1,0 +1,100 @@
+PRIVACY POLICY - TORRE PERFECTA
+Effective date: October 20, 2026
+Developer: Alqenix
+Contact: alqenix@gmail.com
+
+1. Introduction
+This Privacy Policy explains what information the game Torre Perfecta (the "App") handles when you play it. The App is a free stacking game supported by advertising. By using the App, you agree to this policy.
+
+2. Information we do not collect
+We do not ask you to create an account. We do not collect your name, email address, phone number, contacts, photos, camera or microphone data, or precise location. Apart from internet access (used to show ads), the App does not request special permissions.
+
+3. Information stored on your device
+The App saves the following on your device only: your best score, game statistics, daily streak, selected theme, language, and sound and vibration settings. This information is not sent to us. It is deleted when you uninstall the App or clear its data.
+
+4. Advertising (Google AdMob)
+The App shows ads through Google AdMob. There are two kinds of ads: ads shown between some games, and optional rewarded ads that let you continue a game.
+AdMob may collect and use the following information: advertising ID, IP address, device information (such as model, operating system version and language), app interaction and diagnostic data, and approximate location derived from your IP address. Google uses this information to show ads, limit how often you see them, measure performance, prevent fraud and abuse and, where you have given consent if required, personalize ads.
+We do not receive this personal data and we do not sell it. To learn more about how Google handles data, see:
+https://policies.google.com/privacy
+https://policies.google.com/technologies/partner-sites
+
+5. Your choices
+- Consent: if you are in the European Economic Area, the United Kingdom or another region where it is required, the App shows a consent message provided by Google before showing ads.
+- Device settings: you can reset or delete your advertising ID and opt out of ad personalization in your Android settings (usually under Settings > Google > Ads, or Settings > Privacy > Ads).
+- You can stop all data handling by uninstalling the App.
+
+6. Sharing of information
+We do not sell or rent your information. The only third party involved is Google AdMob, as described above. If you use the "share" button, the text you choose to share is sent through your device's sharing menu to the app you select.
+
+7. Children
+The App is not directed to children under 13 (or under 16 where local law requires a higher age). We do not knowingly collect personal information from children. If you believe a child has provided information through the App, contact us at the email above.
+
+8. Data retention and security
+We do not keep personal data about you on any server. Data stored on your device is protected by your device's own security.
+
+9. International transfers
+Google may process advertising data in countries other than your own, under its own policies.
+
+10. Your rights
+Depending on where you live (for example under the GDPR or the CCPA), you may have rights to access, correct or delete your personal data. Because we do not hold personal data about you, there is usually nothing for us to provide, but you can contact us at any time. For data handled by Google for ads, you can use Google's privacy controls.
+
+11. Links to other sites
+The App contains links (for example to this policy or to the app store) that open in your browser. We are not responsible for the content or privacy practices of other websites.
+
+12. Changes to this policy
+We may update this policy from time to time. The new version will be published at the same address with a new effective date. Continued use of the App means you accept the changes.
+
+13. Contact
+If you have questions about this policy, write to: alqenix@gmail.com
+
+
+POLÍTICA DE PRIVACIDAD - TORRE PERFECTA
+Fecha de entrada en vigor: 20 de octubre de 2026
+Desarrollador: Alqenix
+Contacto: alqenix@gmail.com
+
+1. Introducción
+Esta Política de Privacidad explica qué información maneja el juego Torre Perfecta (la "App") cuando juegas. La App es un juego gratuito de apilar bloques que se financia con publicidad. Al usar la App, aceptas esta política.
+
+2. Información que no recopilamos
+No te pedimos que crees una cuenta. No recopilamos tu nombre, correo electrónico, número de teléfono, contactos, fotos, datos de cámara o micrófono, ni tu ubicación precisa. Aparte del acceso a internet (que se usa para mostrar anuncios), la App no solicita permisos especiales.
+
+3. Información guardada en tu dispositivo
+La App guarda solo en tu dispositivo: tu mejor puntaje, las estadísticas de juego, la racha diaria, el tema elegido, el idioma y los ajustes de sonido y vibración. Esta información no se nos envía. Se borra al desinstalar la App o borrar sus datos.
+
+4. Publicidad (Google AdMob)
+La App muestra anuncios mediante Google AdMob. Hay dos tipos: anuncios que aparecen entre algunas partidas y anuncios con recompensa, opcionales, que te permiten continuar una partida.
+AdMob puede recopilar y usar la siguiente información: ID de publicidad, dirección IP, información del dispositivo (como modelo, versión del sistema operativo e idioma), datos de interacción con la app y de diagnóstico, y ubicación aproximada deducida de tu dirección IP. Google usa esta información para mostrar anuncios, limitar su frecuencia, medir su rendimiento, prevenir fraudes y abusos y, cuando hayas dado tu consentimiento si se exige, personalizar los anuncios.
+Nosotros no recibimos estos datos personales ni los vendemos. Para saber más sobre cómo Google trata los datos, consulta:
+https://policies.google.com/privacy
+https://policies.google.com/technologies/partner-sites
+
+5. Tus opciones
+- Consentimiento: si estás en el Espacio Económico Europeo, el Reino Unido u otra región donde se exige, la App muestra un mensaje de consentimiento de Google antes de mostrar anuncios.
+- Ajustes del dispositivo: puedes restablecer o eliminar tu ID de publicidad y desactivar la personalización de anuncios en los ajustes de Android (normalmente en Ajustes > Google > Anuncios, o en Ajustes > Privacidad > Anuncios).
+- Puedes detener todo tratamiento de datos desinstalando la App.
+
+6. Compartir información
+No vendemos ni alquilamos tu información. El único tercero involucrado es Google AdMob, como se describe arriba. Si usas el botón de compartir, el texto que elijas compartir se envía mediante el menú de compartir de tu dispositivo a la aplicación que selecciones.
+
+7. Menores de edad
+La App no está dirigida a menores de 13 años (ni de 16 donde la ley local exija una edad mayor). No recopilamos a sabiendas información personal de menores. Si crees que un menor ha facilitado información a través de la App, escríbenos al correo indicado.
+
+8. Conservación y seguridad de los datos
+No guardamos datos personales tuyos en ningún servidor. Los datos almacenados en tu dispositivo están protegidos por la propia seguridad de tu dispositivo.
+
+9. Transferencias internacionales
+Google puede procesar los datos de publicidad en países distintos al tuyo, según sus propias políticas.
+
+10. Tus derechos
+Según el lugar donde vivas (por ejemplo, bajo el RGPD o la CCPA), puedes tener derecho a acceder, corregir o eliminar tus datos personales. Como no tenemos datos personales tuyos, normalmente no hay nada que podamos entregarte, pero puedes escribirnos en cualquier momento. Para los datos que Google trata con fines publicitarios, puedes usar los controles de privacidad de Google.
+
+11. Enlaces a otros sitios
+La App contiene enlaces (por ejemplo, a esta política o a la tienda de aplicaciones) que se abren en tu navegador. No somos responsables del contenido ni de las prácticas de privacidad de otros sitios web.
+
+12. Cambios en esta política
+Podemos actualizar esta política de vez en cuando. La nueva versión se publicará en la misma dirección con una nueva fecha de entrada en vigor. Si sigues usando la App, aceptas los cambios.
+
+13. Contacto
+Si tienes preguntas sobre esta política, escribe a: alqenix@gmail.com
